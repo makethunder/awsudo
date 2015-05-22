@@ -98,3 +98,21 @@ AWS_ACCESS_KEY_ID=ASIAJBEFTVQMTRQK7Q2A
 AWS_DEFAULT_REGION=us-east-1
 AWS_SECRET_ACCESS_KEY=l8UJvTqOFJLmhiEFksflzKbhCOCmoVf3vAYkAtTw
 ```
+
+# awsrotate
+
+This package also includes a utility to easily rotate your AWS API keys. If you
+followed the quickstart instructions above, you should have your key stored in
+exactly one place: `~/.aws/credentials`.
+
+To rotate that key, simply run:
+
+    awsrotate
+
+This will:
+
+1. Delete any old and inactive keys you have. It will abort if there are any
+   active keys besides the one it finds in `~/.aws/credentials`.
+2. Create a new key.
+3. With the new key (so we are sure it works), deactivate your old key.
+4. Update `~/.aws/credentials`.

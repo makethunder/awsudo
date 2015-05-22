@@ -8,9 +8,13 @@ setup(
     url='https://github.com/paperg/awsudo',
     packages=['awsudo'],
     entry_points={
-        'console_scripts': ['awsudo = awsudo.main:main'],
+        'console_scripts': [
+            'awsudo = awsudo.main:main',
+            'awsrotate = awsudo.rotate:main',
+        ],
     },
     install_requires=[
         'boto',
+        'retrying',
     ],
 )
