@@ -29,39 +29,41 @@ profile `deployment`:
   [assume a role]: http://docs.aws.amazon.com/cli/latest/userguide/cli-roles.html
   [temporary credentials]: http://docs.aws.amazon.com/STS/latest/UsingSTS/Welcome.html
 
-## quickstart
+## Quickstart
 
-Install the AWS CLI and awsudo.
-
-```console
-$ sudo pip install awscli
-$ git clone https://github.com/paperg/awsudo.git
-$ sudo python setup.py install
-```
-
-Configure it with your API key and some other defaults. Of course you need your
-own credentials here. Change the default region and output format to your
-preference. This will create the necessary configuration files in `~/.aws`.
+Install awsudo, which will also install the AWS CLI if you don't already have
+it. Then configure `aws`, which configures `awsudo` because it reads the same
+configuration files:
 
 ```console
+$ pip install git+ssh://git@github.com/paperg/awsudo.git
 $ aws configure
 AWS Access Key ID [None]: AKIAIXAKX3ABKZACKEDN
 AWS Secret Access Key [None]: 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
 Default region name [None]: us-east-1
 Default output format [None]: table
+# configuration files get created in ~/.aws
 $ cat ~/.aws/credentials
 [default]
 aws_access_key_id = AKIAIXAKX3ABKZACKEDN
 aws_secret_access_key = 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
-$  cat ~/.aws/config
+$ cat ~/.aws/config
 [default]
 output = table
 region = us-east-1
+# and now awsudo will set the relevant environment variables
+$ awsudo env | grep AWS
+AWS_ACCESS_KEY_ID=AKIAIXAKX3ABKZACKEDN
+AWS_DEFAULT_REGION=us-east-1
+AWS_SECRET_ACCESS_KEY=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
 ```
 
-Now we can configure any roles you can assume. You need to know the role's ARN:
-you can get it by looking at the role in the AWS web management console under
-the IAM section:
+## Configuring Profiles
+
+If you have roles your account can assume, you can configure profiles so `aws`
+and `awsudo` can use them. To configure a profile you need to know the role's
+ARN. You can get it by looking at the role in the AWS web management console
+under the IAM section:
 
 ![screenshot of web console](doc/arn.png)
 
