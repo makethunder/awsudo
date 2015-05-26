@@ -39,7 +39,15 @@ Sets AWS environment variables and then executes the COMMAND.
 
 
 def parseArgs():
-    options, args = getopt.getopt(sys.argv[1:], 'u:')
+    try:
+        options, args = getopt.getopt(sys.argv[1:], 'u:')
+    except getopt.GetoptError as err:
+        # print help information and exit:
+        print(err)
+        usage()
+
+    if not (args):
+        usage()
 
     profile = None
     for (option, value) in options:
@@ -53,6 +61,7 @@ def parseArgs():
 
 def main():
     profile, args = parseArgs()
+
     cleanEnvironment()
     config = Config()
     resolver = CredentialResolver(config, assumeRole)
