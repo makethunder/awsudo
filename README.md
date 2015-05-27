@@ -36,7 +36,10 @@ it. Then configure `aws`, which configures `awsudo` because it reads the same
 configuration files:
 
 ```console
-$ pip install git+ssh://git@github.com/paperg/awsudo.git
+$ pip install --user git+https://github.com/paperg/awsudo.git
+# the --user option installs binaries to ~/.local/bin
+$ echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> ~/.bashrc
+$ source ~/.bashrc
 $ aws configure
 AWS Access Key ID [None]: AKIAIXAKX3ABKZACKEDN
 AWS Secret Access Key [None]: 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
