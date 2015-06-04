@@ -37,8 +37,9 @@ configuration files:
 
 ```console
 $ pip install --user git+https://github.com/paperg/awsudo.git
-# the --user option installs binaries to ~/.local/bin
-$ echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> ~/.bashrc
+# the --user option installs binaries to ~/.local/bin or
+# ~/Library/Python/VERSION/bin/ on a Mac
+$ echo 'export PATH="$(python -m site --user-base)/bin:${PATH}"' >> ~/.bashrc
 $ source ~/.bashrc
 $ aws configure
 AWS Access Key ID [None]: AKIAIXAKX3ABKZACKEDN
