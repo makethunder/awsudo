@@ -108,8 +108,9 @@ def deleteOldKeys(iam, currentKeyId, userName):
 
     for key in oldKeys:
         if key['status'] == 'Active':
-            abort(
-                "%s is still active; I will not automatically delete it" %
+            abort((
+                "%s is still active: will not automatically delete it.\n" +
+                "Please delete it manually if it is safe to do so.") %
                 (key['access_key_id'],)
             )
 
