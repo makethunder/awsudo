@@ -1,9 +1,13 @@
 import os
 from os import path
 from retrying import retry
-from ConfigParser import RawConfigParser
 from boto.iam.connection import IAMConnection
 from boto.exception import BotoServerError
+
+try:
+    from configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
 
 
 class CredentialsFile(object):
@@ -98,7 +102,7 @@ def deleteOldKeys(iam, currentKeyId, userName):
     """
     response = iam.get_all_access_keys(userName)['list_access_keys_response']
     allKeys = response['list_access_keys_result']['access_key_metadata']
-    oldKeys = filter(lambda k: k['access_key_id'] != currentKeyId, allKeys)
+    oldKeys = [k for k in allKeys if k['access_key_id'] != currentKeyId]
 
     if len(oldKeys) == len(allKeys):
         abort(

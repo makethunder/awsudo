@@ -12,7 +12,7 @@ def run(args, extraEnv):
     env.update(extraEnv)
     try:
         os.execvpe(args[0], args, env)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ENOENT:
             raise
         raise SystemExit("%s: command not found" % (args[0],))

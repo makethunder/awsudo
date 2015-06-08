@@ -1,5 +1,9 @@
 from os import path
-import ConfigParser
+
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 
 class NoRoleForProfileError(Exception):
@@ -8,10 +12,10 @@ class NoRoleForProfileError(Exception):
 
 class Config(object):
     def __init__(self, configDir=path.expanduser('~/.aws')):
-        self._config = ConfigParser.RawConfigParser()
+        self._config = configparser.RawConfigParser()
         self._config.read([path.join(configDir, 'config')])
 
-        self._credentials = ConfigParser.RawConfigParser()
+        self._credentials = configparser.RawConfigParser()
         self._credentials.read([path.join(configDir, 'credentials')])
 
     @staticmethod
@@ -37,7 +41,7 @@ class Config(object):
 
         try:
             region = self._config.get(section, 'region')
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             pass
         else:
             settings['AWS_DEFAULT_REGION'] = region
@@ -48,12 +52,12 @@ class Config(object):
         section = self._sectionForProfile(profile)
         try:
             roleArn = self._config.get(section, 'role_arn')
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+        except (configparser.NoOptionError, configparser.NoSectionError):
             raise NoRoleForProfileError(profile)
 
         try:
             sourceProfile = self._config.get(section, 'source_profile')
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             sourceProfile = 'default'
 
         return sourceProfile, roleArn
