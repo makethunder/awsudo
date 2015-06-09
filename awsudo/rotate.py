@@ -1,5 +1,9 @@
+from __future__ import print_function
+
 import os
+import sys
 from os import path
+from textwrap import dedent
 from retrying import retry
 from boto.iam.connection import IAMConnection
 from boto.exception import BotoServerError
@@ -43,6 +47,10 @@ class CredentialsFile(object):
 
 
 def main():
+    if len(sys.argv) > 1:
+        printUsage()
+        raise SystemExit(1)
+
     credentials = CredentialsFile()
 
     iam = IAMConnection(
@@ -66,6 +74,32 @@ def main():
         newKey['access_key_id'],
         newKey['secret_access_key'],
     )
+
+
+def printUsage():
+    usage = dedent('''
+    Usage: awsrotate
+
+    Rotates AWS API keys.
+
+    The key to rotate will be found in the [default] section of
+    ~/.aws/credentials.
+
+    AWS limits the number of API keys per user to a maximum of 2. So first, any
+    inactive keys are deleted. If there are active keys other than the one
+    being rotated, awsrotate will abort. This prevents accidental deletion of
+    keys that may still be in use.
+
+    A new key is then created.
+
+    Then, the new key is used to deactivate old key. This demonstrates that the
+    new key works. The old key is deactivated, not deleted, so it's possible to
+    reactivate the old key should it be discovered that it was still in use.
+
+    Finally, the new key is written to ~/.aws/credentials.
+    ''').strip()
+
+    print(usage, file=sys.stderr)
 
 
 def getUserName(iam):
