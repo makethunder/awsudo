@@ -1,5 +1,4 @@
-from awsudo.config import CredentialResolver, Config
-from awsudo.aws import assumeRole
+from awsudo.config import CredentialResolver
 
 import errno
 import getopt
@@ -63,6 +62,5 @@ def main():
     profile, args = parseArgs()
 
     cleanEnvironment()
-    config = Config()
-    resolver = CredentialResolver(config, assumeRole)
+    resolver = CredentialResolver()
     run(args, resolver.getEnvironment(profile))
