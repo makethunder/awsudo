@@ -1,0 +1,218 @@
+#!/bin/bash
+
+# This script may help people in installing and configuring awsudo
+# and awsrotate in the simplest way. It can also be done manually; see
+# README.md.
+#
+# The install is done into a virtualenv because it's more robust. In
+# particular, Mac OS X system Python installs six in such a way that it can't
+# be overridden by user packages, and comes with an old version that doesn't
+# have the "wraps" method. Using a virtualenv steps around all that.
+
+default_path="$HOME/Documents/awsudo"
+
+read_with_default() {
+	prompt="$1"
+	default="$2"
+
+	read -p "$prompt [$default] " value
+	echo "${value:-$default}"
+}
+
+
+confirm() {
+	prompt="$1"
+	read -p "$prompt [y] " response
+	[[ "${response:-y}" = 'y' ]]
+}
+
+
+install_virtualenv() {
+	if ! hash virtualenv &>/dev/null; then
+		echo "I'll need to install virtualenv to proceed."
+
+		if ! hash pip &>/dev/null; then
+			echo "But first I'll need to install pip to install virtualenv."
+			confirm "Shall I install pip?" || exit 1
+			sudo easy_install pip || exit
+		fi
+
+		confirm "Shall I install virtualenv?" || exit 1
+		sudo pip install virtualenv || exit
+	fi
+}
+
+
+# check that a program is installed; create a symlink if not.
+check_symlink() {
+	local prog="$1"
+
+	if hash "$prog" &>/dev/null; then
+		cat <<-EOF
+		$prog is already installed at $(hash -t "$prog").
+		Maybe you have a preexisting installation? Things could be confusing.
+
+		EOF
+		confirm "Proceed anyway?" || exit
+	else
+		echo "Looks like $prog is not in your \$PATH."
+		confirm "Should I make a symlink?" || return 0
+
+		local bin=$(read_with_default \
+			"Where?" \
+			"/usr/local/bin")
+
+		if [[ -w "$bin" ]]; then
+			local ln="ln"
+		else
+			local ln="sudo ln"
+		fi
+
+		$ln -s "$path/bin/$prog" "$bin" || exit
+
+		if ! hash $prog &>/dev/null; then
+			cat >&2 <<-EOF
+			Something is wrong: I can't find $prog even though I just
+			created a symlink in in $bin. Maybe $bin isn't in your
+			\$PATH?
+
+			EOF
+			confirm "Proceed anyway?" || exit 1
+		else
+			local actual_location=$(hash -t "$prog")
+			if [[ "$actual_location" != "$bin/$prog" ]]; then
+				cat >&2 <<-EOF
+				This is odd: even though I just made a symlink for $prog in
+				$bin, bash thinks $prog is at $actual_location.
+				Maybe you need to adjust the order of your \$PATH?
+
+				EOF
+				confirm "Proceed anyway?" || exit 1
+			fi
+		fi
+	fi
+}
+
+
+rotate_key() {
+	confirm "Do you want to rotate your key now?" || return 0
+	echo "Running 'awsrotate'. It takes about 10 seconds..."
+
+	if ! awsrotate; then
+		cat >&2 <<-EOF
+		Looks like it didn't work :(
+
+		Things to check:
+		- the correct credentials are in ~/.aws/credentials
+		- AWS account permissions allow you to modify your own API access keys
+		- "awsrotate" and "awsudo" and "aws" are executable and in \$PATH
+
+		To try again, later you can just run "awsrotate".
+
+		Would you like to proceed? I can still help you set up cron to run
+		awsrotate automatically, and you can troubleshoot this failure later.
+
+		EOF
+		confirm "Proceed on to configuring cron?" || exit 1
+	fi
+
+	echo "Success!"
+	echo
+}
+
+
+create_cron_entry() {
+	if ! crontab -l &>/dev/null; then
+		cat <<-EOF
+		I can't run 'crontab -l', so I can't configure cron for you."
+		For great security, consider configuring something to run 'awsrotate'
+		periodically (daily, perhaps) so your API key is automatically rotated.
+		EOF
+		return 0
+	fi
+
+	cat <<-EOF
+	I can add an entry to your crontab to automatically rotate your key daily at
+	noon. Cron works pretty well as long as your machine is usually on at the
+	scheduled time. There are other tools (anacron, upstart, systemd, launchd)
+	which might work better, but I don't know how to configure those.
+
+	If you want to edit the cron entry later, you can do that by running:
+	
+	    crontab -e
+
+	EOF
+	confirm "Should I add a crontab entry now?" || return 0
+	(crontab -l; echo "00 12 * * * $path/bin/awsrotate") | crontab - || exit
+}
+
+
+install_in_virtualenv() {
+	path=$(read_with_default \
+		"Where would you like awsudo installed?" \
+		"$HOME/Documents/awsudo")
+
+	# expand ~ to the home directory like Bash does
+	path="${path/#\~/$HOME}"
+
+	if [[ -e "$path" ]] && [[ ! -d "$path" ]]; then
+		echo "$path already exists but is not a directory! Aborting." >&2
+		exit 1
+	fi
+
+	mkdir -p "$path" || exit
+
+	if [[ ! -e "$path/bin/python" ]]; then
+		echo "Creating a virtualenv at $path"
+		virtualenv -q "$path" || exit
+	fi
+
+	echo "Updating pip and setuptools to the latest version"
+	"$path/bin/pip" -q install --upgrade pip setuptools || exit
+
+	echo "Installing awsudo and awsrotate"
+	"$path/bin/pip" -q install --upgrade git+https://github.com/paperg/awsudo.git || exit
+
+	echo
+}
+
+
+configure_aws() {
+	if [[ ! -e ~/.aws/credentials ]]; then
+		echo "Looks like the AWS CLI isn't configured."
+		if confirm "Configure it now?"; then
+			"$path/bin/aws" configure || exit
+		fi
+	fi
+}
+
+
+cat <<-EOF
+This interactive script will help you to:
+
+	- install awsudo and awsrotate,
+	- perform a minimal configuration, and
+	- (optionally) configure cron to automatically rotate your AWS API keys.
+	
+It will install in a Python virtualenv, an isolated Python environment. This
+helps to make the installation more robust against environmental variations.
+
+If you want to abort installation, press CTRL-C now. Otherwise answer the
+questions that follow, or press enter to accept the defaults in square
+brackets.
+
+EOF
+
+install_virtualenv
+
+install_in_virtualenv
+
+for prog in awsudo awsrotate; do
+	check_symlink "$prog"
+done
+
+configure_aws
+
+rotate_key
+
+create_cron_entry

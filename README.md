@@ -1,3 +1,11 @@
+# Really Quickstart
+
+```console
+$ curl https://raw.githubusercontent.com/paperg/awsudo/master/install | bash
+```
+
+For a somewhat more broad introduction to what can be accomplished, read on...
+
 # Quick Tutorial
 
 Install it:
