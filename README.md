@@ -53,6 +53,14 @@ updates your configuration:
 $ awsrotate
 ```
 
+If you want to rotate your key every day at 5:26 AM automatically, you might
+ask [cron](https://en.wikipedia.org/wiki/Cron) to run `awsrotate` for you, like
+so:
+
+```console
+$ (crontab -l; echo "26 05 * * * $(which awsrotate)") | crontab -
+```
+
 Maybe you have separate development and production accounts, and you need to
 [assume a role] to use them? You might a section like this to `~/.aws/config`
 for each account, substituting your own [account number] and role name:
