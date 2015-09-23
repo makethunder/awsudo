@@ -1,7 +1,7 @@
 # Really Quickstart
 
 ```console
-$ curl https://raw.githubusercontent.com/paperg/awsudo/master/install | bash
+$ bash <(curl https://raw.githubusercontent.com/paperg/awsudo/master/install)
 ```
 
 For a somewhat more broad introduction to what can be accomplished, read on...

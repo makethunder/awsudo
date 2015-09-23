@@ -15,14 +15,14 @@ read_with_default() {
 	prompt="$1"
 	default="$2"
 
-	read -p "$prompt [$default] " value
+	read -p "$prompt [$default] " value || exit
 	echo "${value:-$default}"
 }
 
 
 confirm() {
 	prompt="$1"
-	read -p "$prompt [y] " response
+	read -p "$prompt [y] " response || exit
 	[[ "${response:-y}" = 'y' ]]
 }
 
