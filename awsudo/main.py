@@ -1,5 +1,6 @@
+from awscli.errorhandler import ClientError
 from awsudo.config import CredentialResolver
-
+from textwrap import dedent
 import errno
 import getopt
 import os
@@ -63,4 +64,16 @@ def main():
 
     cleanEnvironment()
     resolver = CredentialResolver()
-    run(args, resolver.getEnvironment(profile))
+    try:
+        run(args, resolver.getEnvironment(profile))
+    except ClientError as e:
+        if e.error_code != 'InvalidClientTokenId':
+            raise
+        if e.operation_name != 'AssumeRole':
+            raise
+
+        raise SystemExit(dedent('''
+            %s
+
+            Are the credentials in ~/.aws/credentials valid?
+            ''' % (e.message,)).strip())
