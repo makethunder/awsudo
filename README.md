@@ -92,8 +92,11 @@ Maybe assuming that role [requires MFA]? Just add that to the configuration and
 role_arn = arn:aws:iam::123456789012:role/development
 source_profile = default
 region = us-east-1
-mfa_serial = arn:aws:iam::123456789012:mfa/phil.frost
+mfa_serial = arn:aws:iam::98765432100:mfa/phil.frost
 ```
+
+The `mfa_serial` option should correspond to an MFA device in the account
+referenced by `source_profile`.
 
 Many more configurations are possible. See the [AWS CLI guide] for more detail.
 `awsudo` uses the same code as `aws` to find and resolve credentials and so
