@@ -45,7 +45,7 @@ AWS_SECRET_ACCESS_KEY=rkCLOMJMx2DbGoGySIETU8aRFfjGxgJAzDJ6Zt+3
 ```
 
 It's been a while, and you want to rotate your API keys according to [best
-practices]. Or maybe you were doing a presentation and accidentaly flashed your
+practices]. Or maybe you were doing a presentation and accidentally flashed your
 credentials to the audience. Oops! Just one command rotates your keys and
 updates your configuration:
 
