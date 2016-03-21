@@ -8,6 +8,8 @@ from retrying import retry
 from boto.iam.connection import IAMConnection
 from boto.exception import BotoServerError
 
+ACCESS_KEY_DOCS = 'http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html'
+
 try:
     from configparser import RawConfigParser
 except ImportError:
@@ -68,7 +70,15 @@ def main():
     )
 
     oldKey = credentials.keyId
-    deactivateKey(iam, oldKey, userName)
+    try:
+        deactivateKey(iam, oldKey, userName)
+    except BotoServerError as e:
+        print(e)
+        raise SystemExit(dedent('''
+        Failed to deactivate the old key (%s) after one minute of
+        retrying. Manual remediation will be required.
+        %s
+        ''' % (oldKey, ACCESS_KEY_DOCS)).strip())
 
     credentials.updateCredentials(
         newKey['access_key_id'],
@@ -108,7 +118,7 @@ def getUserName(iam):
 
 
 @retry(
-    stop_max_delay=30*1000,
+    stop_max_delay=60*1000,
     wait_exponential_multiplier=250,
     wait_exponential_max=10*1000,
     retry_on_exception=lambda e: isinstance(e, BotoServerError))
@@ -146,11 +156,11 @@ def deleteOldKeys(iam, currentKeyId, userName):
 
     for key in oldKeys:
         if key['status'] == 'Active':
-            abort((
-                "%s is still active: will not automatically delete it.\n" +
-                "Please delete it manually if it is safe to do so.") %
-                (key['access_key_id'],)
-            )
+            abort(dedent('''
+            %s is still active: will not automatically delete it.
+            Please delete it manually if it is safe to do so.
+            %s
+            ''' % (key['access_key_id'], ACCESS_KEY_DOCS)).strip())
 
     for key in oldKeys:
         iam.delete_access_key(key['access_key_id'])
@@ -160,3 +170,7 @@ def makeNewKey(iam, userName):
     response = iam.create_access_key(userName)['create_access_key_response']
     result = response['create_access_key_result']
     return result['access_key']
+
+
+if __name__ == '__main__':
+    main()
