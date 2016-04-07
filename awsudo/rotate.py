@@ -17,20 +17,27 @@ except ImportError:
 
 
 class CredentialsFile(object):
-    def __init__(self, filename=path.expanduser('~/.aws/credentials')):
+    def __init__(self,
+                 section,
+                 filename=path.expanduser('~/.aws/credentials')):
         self._filename = filename
         self._config = RawConfigParser()
+        self.section = section
 
         with open(self._filename, 'r') as f:
             self._config.readfp(f)
 
+        if not self._config.has_section(section):
+            raise SystemExit('could not find section [%s] in %r'
+                             % (section, filename))
+
     @property
     def keyId(self):
-        return self._config.get('default', 'aws_access_key_id')
+        return self._config.get(self.section, 'aws_access_key_id')
 
     @property
     def secretKey(self):
-        return self._config.get('default', 'aws_secret_access_key')
+        return self._config.get(self.section, 'aws_secret_access_key')
 
     def updateCredentials(self, keyId, secretKey):
         """Write new credentials to the config file.
@@ -39,8 +46,8 @@ class CredentialsFile(object):
         files you shouldn't mind.
         """
 
-        self._config.set('default', 'aws_access_key_id', keyId)
-        self._config.set('default', 'aws_secret_access_key', secretKey)
+        self._config.set(self.section, 'aws_access_key_id', keyId)
+        self._config.set(self.section, 'aws_secret_access_key', secretKey)
 
         os.umask(0o0066)
         os.rename(self._filename, self._filename+'~')
@@ -49,11 +56,16 @@ class CredentialsFile(object):
 
 
 def main():
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
         printUsage()
         raise SystemExit(1)
 
-    credentials = CredentialsFile()
+    try:
+        section = sys.argv[1]
+    except IndexError:
+        section = 'default'
+
+    credentials = CredentialsFile(section)
 
     iam = IAMConnection(
         aws_access_key_id=credentials.keyId,
@@ -88,12 +100,12 @@ def main():
 
 def printUsage():
     usage = dedent('''
-    Usage: awsrotate
+    Usage: awsrotate [SECTION]
 
     Rotates AWS API keys.
 
-    The key to rotate will be found in the [default] section of
-    ~/.aws/credentials.
+    The key to rotate will be found in the specified SECTION of
+    ~/.aws/credentials. If no SECTION is specified, then use "default".
 
     AWS limits the number of API keys per user to a maximum of 2. So first, any
     inactive keys are deleted. If there are active keys other than the one
