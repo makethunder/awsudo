@@ -24,7 +24,7 @@ def cleanEnvironment():
     Since it's this program's job to manage this environment configuration, we
     can blow all this away to avoid any confusion.
     """
-    for k in os.environ.keys():
+    for k in list(os.environ.keys()):
         if k.startswith('AWS_') or k.startswith('BOTO_'):
             del os.environ[k]
 
