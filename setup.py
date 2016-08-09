@@ -5,7 +5,7 @@ from setuptools import setup
 setup(
     name='awsudo',
     description='sudo-like utility to manage AWS credentials',
-    url='https://github.com/paperg/awsudo',
+    url='https://github.com/makethunder/awsudo',
     packages=['awsudo'],
     entry_points={
         'console_scripts': [
