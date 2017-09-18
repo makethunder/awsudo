@@ -11,7 +11,7 @@ For a somewhat more broad introduction to what can be accomplished, read on...
 Install it:
 
 ```console
-$ pip install --user git+https://github.com/paperg/awsudo.git
+$ pip install --user git+https://github.com/makethunder/awsudo.git
 ```
 
 The `--user` option asks `pip` to install to your home directory, so you might
