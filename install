@@ -171,7 +171,7 @@ install_in_virtualenv() {
 	"$path/bin/pip" -q install --upgrade pip setuptools || exit
 
 	echo "Installing awsudo and awsrotate"
-	"$path/bin/pip" -q install --upgrade git+https://github.com/paperg/awsudo.git || exit
+	"$path/bin/pip" -q install --upgrade git+https://github.com/makethunder/awsudo.git || exit
 
 	echo
 }
