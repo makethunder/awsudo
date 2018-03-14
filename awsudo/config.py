@@ -1,4 +1,6 @@
 from argparse import Namespace
+
+from awscli.customizations.assumerole import inject_assume_role_provider_cache
 from awscli.handlers import awscli_initialize
 from botocore.session import Session
 from botocore.hooks import HierarchicalEmitter
@@ -13,12 +15,11 @@ class CredentialResolver(object):
         if profile:
             session.set_config_variable('profile', profile)
 
-        awscli_initialize(eventHooks)
+        eventHooks.register('session-initialized',
+                            inject_assume_role_provider_cache,
+                            unique_id='inject_assume_role_cred_provider_cache')
 
-        parsed_args = Namespace()
-        parsed_args.command = None
-
-        session.emit('session-initialized', session=session, parsed_args=parsed_args)
+        session.emit('session-initialized', session=session)
         creds = session.get_credentials()
 
         env = {}
