@@ -16,6 +16,6 @@ setup(
     install_requires=[
         'boto',
         'retrying',
-        'awscli==1.12.2',
+        'awscli',
     ],
 )

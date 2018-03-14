@@ -1,3 +1,4 @@
+from argparse import Namespace
 from awscli.handlers import awscli_initialize
 from botocore.session import Session
 from botocore.hooks import HierarchicalEmitter
@@ -13,7 +14,11 @@ class CredentialResolver(object):
             session.set_config_variable('profile', profile)
 
         awscli_initialize(eventHooks)
-        session.emit('session-initialized', session=session)
+
+        parsed_args = Namespace()
+        parsed_args.command = None
+
+        session.emit('session-initialized', session=session, parsed_args=parsed_args)
         creds = session.get_credentials()
 
         env = {}
