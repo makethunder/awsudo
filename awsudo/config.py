@@ -1,7 +1,4 @@
-from argparse import Namespace
-
 from awscli.customizations.assumerole import inject_assume_role_provider_cache
-from awscli.handlers import awscli_initialize
 from botocore.session import Session
 from botocore.hooks import HierarchicalEmitter
 
