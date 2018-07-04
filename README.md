@@ -102,6 +102,17 @@ Many more configurations are possible. See the [AWS CLI guide] for more detail.
 `awsudo` uses the same code as `aws` to find and resolve credentials and so
 works identically.
 
+## Testing
+
+We recommend using pyenv as our tests run on 2.7 and 3.4.
+
+```bash
+pyenv install 2.7 && pyenv install 3.4.8
+pyenv local 2.7 3.4.8
+eval "$(pyenv init -)"
+pyenv rehash
+tox
+```
 
   [credentials]: http://blogs.aws.amazon.com/security/post/Tx3D6U6WSFGOK2H/A-New-and-Standardized-Way-to-Manage-Credentials-in-the-AWS-SDKs
   [best practices]: http://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html
