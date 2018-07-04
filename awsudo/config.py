@@ -1,4 +1,4 @@
-from awscli.handlers import awscli_initialize
+from awscli.customizations.assumerole import inject_assume_role_provider_cache
 from botocore.session import Session
 from botocore.hooks import HierarchicalEmitter
 
@@ -12,7 +12,10 @@ class CredentialResolver(object):
         if profile:
             session.set_config_variable('profile', profile)
 
-        awscli_initialize(eventHooks)
+        eventHooks.register('session-initialized',
+                            inject_assume_role_provider_cache,
+                            unique_id='inject_assume_role_cred_provider_cache')
+
         session.emit('session-initialized', session=session)
         creds = session.get_credentials()
 
